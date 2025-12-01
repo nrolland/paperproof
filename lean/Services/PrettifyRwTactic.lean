@@ -10,7 +10,7 @@ namespace Paperproof.Services
 
 inductive State
   | start
-  | tacticStringWillOccurSoon  
+  | tacticStringWillOccurSoon
   | tacticStringStarted
 
 /--
@@ -27,22 +27,22 @@ def getClosestRw (text: Lean.FileMap) (hoverPos: String.Pos.Raw) : Id String := 
   while currentPosition != 0 do
     currentPosition := currentPosition.prev text
     let currentChar := currentPosition.get text
-    
+
     match state with
-    | State.start => 
+    | State.start =>
       if currentChar.toString == "[" then
         state := State.tacticStringWillOccurSoon
-    | State.tacticStringWillOccurSoon => 
+    | State.tacticStringWillOccurSoon =>
       if !currentChar.isWhitespace && !currentChar.isDigit then
         state := State.tacticStringStarted
         rwList := currentChar :: rwList
-    | State.tacticStringStarted => 
+    | State.tacticStringStarted =>
       if !currentChar.isWhitespace then
         rwList := currentChar :: rwList
       else
         break
 
-  return String.mk rwList
+  return String.ofList rwList
 
 /--
   EXAMPLE
@@ -59,7 +59,7 @@ def prettifyRwTactic (tacticInfo : TacticInfo) (text : FileMap) (hoverPos : Stri
   if (isTacticRwRule tacticInfo) then
     let .some tacticSubstring := getTacticSubstring tacticInfo | return ""
     let closestRwTacticName := getClosestRw text hoverPos
-    
+
     let rwRule := (tacticSubstring.toString.splitOn ",").head!.trim
     pure s!"{closestRwTacticName} [{rwRule}]"
   else
